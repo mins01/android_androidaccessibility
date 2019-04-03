@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Accessibility</string>
+    <string name="accessibility_description">접근성 테스트용 설명</string>
+</resources>
