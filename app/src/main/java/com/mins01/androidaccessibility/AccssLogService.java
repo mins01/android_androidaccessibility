@@ -194,6 +194,9 @@ public class AccssLogService extends AccessibilityService {
         if(inflateView != null){
             ((WindowManager)getSystemService(WINDOW_SERVICE)).removeView(inflateView);
         }
+        if(selected_rect != null){
+            ((WindowManager)getSystemService(WINDOW_SERVICE)).removeView(selected_rect);
+        }
         stopSelf();
     }
 
