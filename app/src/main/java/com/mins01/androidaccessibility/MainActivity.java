@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
+import static android.content.Intent.FLAG_ACTIVITY_NEW_TASK;
+
 public class MainActivity extends AppCompatActivity {
     Context context;
     Activity activity;
@@ -102,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
         }).create().show();
     }
     public void openSetting(){
-        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
     public void openFloatingMenu(){
 //        stopService(new Intent(this,FloatMenu.class));
@@ -147,20 +151,24 @@ public class MainActivity extends AppCompatActivity {
     private Deque<AccessibilityEventVo> dqEvt;
     private AccessibilityEventVo lastEvt;
     private AccessibilityNodeInfo lastAn;
+    private String lastText;
 
     public void syncBundle(@Nullable Intent intent){
         if(intent == null){
             return;
         }
 //        Intent intent = getIntent();
-        if(intent.hasExtra("dqEvt")){
-            dqEvt = (Deque<AccessibilityEventVo>) intent.getSerializableExtra("dqEvt");
-        }
+//        if(intent.hasExtra("dqEvt")){
+//            dqEvt = (Deque<AccessibilityEventVo>) intent.getSerializableExtra("dqEvt");
+//        }
         if(intent.hasExtra("lastEvt")){
             lastEvt = (AccessibilityEventVo) intent.getSerializableExtra("lastEvt");
         }
         if(intent.hasExtra("lastAn")){
             lastAn = (AccessibilityNodeInfo) intent.getSerializableExtra("lastAn");
+        }
+        if(intent.hasExtra("lastText")){
+            lastText = intent.getStringExtra("lastText");
         }
         showResult();
     }
@@ -175,17 +183,19 @@ public class MainActivity extends AppCompatActivity {
 //                sb.append("================================"+"\n");
 //            }
 //        }
-        if(lastEvt != null){
-                sb.append("Catch Event Package Name : " + lastEvt.packagename+"\n");
-                sb.append("Catch Event TEXT : " + lastEvt.text);
-                sb.append("Catch Event ContentDescription : " + lastEvt.contentDescription+"\n");
-                sb.append("================================"+"\n");
+//        if(lastEvt != null){
+//                sb.append("Catch Event Package Name : " + lastEvt.packagename+"\n");
+//                sb.append("Catch Event TEXT : " + lastEvt.text);
+//                sb.append("Catch Event ContentDescription : " + lastEvt.contentDescription+"\n");
+//                sb.append("================================"+"\n");
+//        }
+//        if(lastAn != null){
+//            sb.append("getSource.getTest : " + lastAn.getText()+"\n");
+//            sb.append("================================"+"\n");
+//        }
+        if(lastText != null){
+            sb.append("selected text\n" + lastText+"\n");
         }
-        if(lastAn != null){
-            sb.append("getSource.getTest : " + lastAn.getText()+"\n");
-            sb.append("================================"+"\n");
-        }
-
         ((TextView)findViewById(R.id.tvResults)).setText(sb.toString());
     }
 }

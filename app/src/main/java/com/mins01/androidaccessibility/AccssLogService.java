@@ -205,16 +205,20 @@ public class AccssLogService extends AccessibilityService {
     public void showResults(){
         Intent intent = new Intent(context,MainActivity.class);
         intent.addFlags(FLAG_ACTIVITY_NEW_TASK | FLAG_ACTIVITY_SINGLE_TOP);
-        intent.putExtra("dqEvt", (Serializable) dqEvt);
-        intent.putExtra("lastEvt", (Serializable) lastEvt);
-        intent.putExtra("lastAn", lastAn);
+//        intent.putExtra("dqEvt", (Serializable) dqEvt);
+//        intent.putExtra("lastEvt", (Serializable) lastEvt);
+//        intent.putExtra("lastAn", lastAn);
+
+        intent.putExtra("lastText", lastAn.getText()!=null ? lastAn.getText().toString():"");
 
 
         context.startActivity(intent);
     }
 
     public void openSetting(){
-        startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS));
+        Intent intent = new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS);
+        intent.setFlags(FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
 
