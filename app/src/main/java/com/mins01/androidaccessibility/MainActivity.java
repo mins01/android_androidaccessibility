@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
+import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     Context context;
     Activity activity;
 
-    public Deque<AccessibilityEventVo> dqEvt;
+
 
     @Override
     protected void onResume() {
@@ -142,6 +143,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
+
+    private Deque<AccessibilityEventVo> dqEvt;
+    private AccessibilityEventVo lastEvt;
+    private AccessibilityNodeInfo lastAn;
+
     public void syncBundle(@Nullable Intent intent){
         if(intent == null){
             return;
@@ -150,19 +156,36 @@ public class MainActivity extends AppCompatActivity {
         if(intent.hasExtra("dqEvt")){
             dqEvt = (Deque<AccessibilityEventVo>) intent.getSerializableExtra("dqEvt");
         }
+        if(intent.hasExtra("lastEvt")){
+            lastEvt = (AccessibilityEventVo) intent.getSerializableExtra("lastEvt");
+        }
+        if(intent.hasExtra("lastAn")){
+            lastAn = (AccessibilityNodeInfo) intent.getSerializableExtra("lastAn");
+        }
         showResult();
     }
     public void showResult(){
         StringBuilder sb = new StringBuilder();
-        if(dqEvt != null){
-            for(AccessibilityEventVo aev : dqEvt){
-                sb.append("Catch Event Package Name : " + aev.packagename+"\n");
-                sb.append("Catch Event TEXT : " + aev.text);
-                sb.append("Catch Event ContentDescription : " + aev.contentDescription+"\n");
-                sb.append("Catch Event Source : " + aev.sourceToString+"\n");
+//        if(dqEvt != null){
+//            for(AccessibilityEventVo aev : dqEvt){
+//                sb.append("Catch Event Package Name : " + aev.packagename+"\n");
+//                sb.append("Catch Event TEXT : " + aev.text);
+//                sb.append("Catch Event ContentDescription : " + aev.contentDescription+"\n");
+//                sb.append("Catch Event Source : " + aev.sourceToString+"\n");
+//                sb.append("================================"+"\n");
+//            }
+//        }
+        if(lastEvt != null){
+                sb.append("Catch Event Package Name : " + lastEvt.packagename+"\n");
+                sb.append("Catch Event TEXT : " + lastEvt.text);
+                sb.append("Catch Event ContentDescription : " + lastEvt.contentDescription+"\n");
                 sb.append("================================"+"\n");
-            }
         }
+        if(lastAn != null){
+            sb.append("getSource.getTest : " + lastAn.getText()+"\n");
+            sb.append("================================"+"\n");
+        }
+
         ((TextView)findViewById(R.id.tvResults)).setText(sb.toString());
     }
 }
