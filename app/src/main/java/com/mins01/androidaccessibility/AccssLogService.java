@@ -76,7 +76,10 @@ public class AccssLogService extends AccessibilityService {
             case AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED:; //8192
             case AccessibilityEvent.TYPE_VIEW_FOCUSED:; //8
             case AccessibilityEvent.TYPE_VIEW_CLICKED:; //1
+            case AccessibilityEvent.TYPE_VIEW_LONG_CLICKED:; //2
             case AccessibilityEvent.TYPE_VIEW_SELECTED:; //4
+            case AccessibilityEvent.TYPE_VIEW_CONTEXT_CLICKED:; //8388608
+
 
 
 
