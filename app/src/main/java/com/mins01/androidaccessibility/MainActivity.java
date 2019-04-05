@@ -1,30 +1,28 @@
 package com.mins01.androidaccessibility;
 
-import android.Manifest;
 import android.accessibilityservice.AccessibilityServiceInfo;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.view.View;
-import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityManager;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.ArrayDeque;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
@@ -60,19 +58,17 @@ public class MainActivity extends AppCompatActivity {
                 openSetting();
             }
         });
-        ((Button)findViewById(R.id.btnOpenFloatingMenu)).setOnClickListener(new View.OnClickListener() {
+        ((Button)findViewById(R.id.btnOpenSettingForOverlay)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startOverlayWindowService(context);
+                onObtainingPermissionOverlayWindow();
 //                openFloatingMenu();
             }
         });
-        ((Button)findViewById(R.id.btnCheckAccessibility)).setOnClickListener(new View.OnClickListener() {
+        ((Button)findViewById(R.id.btnSearchGoogle)).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(!checkAccessibilityPermissions()){
-                    setAccessibilityPermissions();
-                }
+                openURL(createUrlGoogle(((TextView)findViewById(R.id.tvResults)).getText().toString()));
             }
         });
         ((TextView) findViewById(R.id.tvResults)).setMovementMethod(new ScrollingMovementMethod());
@@ -194,8 +190,25 @@ public class MainActivity extends AppCompatActivity {
 //            sb.append("================================"+"\n");
 //        }
         if(lastText != null){
-            sb.append("selected text\n" + lastText+"\n");
+            sb.append(lastText);
         }
         ((TextView)findViewById(R.id.tvResults)).setText(sb.toString());
+    }
+
+
+    public String createUrlGoogle(String q) {
+
+        String url = null;
+        try {
+            url = "https://www.google.com/search?q="+ URLEncoder.encode(q,"utf-8");
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return url;
+    }
+
+    public void openURL(String url){
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        startActivity(browserIntent);
     }
 }

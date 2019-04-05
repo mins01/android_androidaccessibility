@@ -17,6 +17,8 @@
         android:textAppearance="@style/TextAppearance.AppCompat"
         android:textSize="8sp"
         android:textStyle="bold"
+        android:clickable="false"
+        android:focusable="false"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -35,6 +37,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
+    <TextView
+        android:id="@+id/tvLastText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:text="last Text"
+        android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textSize="8sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvLastPackagename" />
+
     <Button
         android:id="@+id/btnHide"
         android:layout_width="wrap_content"
@@ -44,10 +60,13 @@
         android:layout_marginEnd="8dp"
         android:text="setting"
         android:textSize="8sp"
+
+        android:includeFontPadding="false"
+        android:minHeight="0sp" android:minWidth="0sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
+        app:layout_constraintHorizontal_bias="0.500"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvLastPackagename" />
+        app:layout_constraintTop_toBottomOf="@+id/tvLastText" />
 
     <Button
         android:id="@+id/btnShowResults"
@@ -58,6 +77,8 @@
         android:layout_marginEnd="8dp"
         android:text="show results"
         android:textSize="8sp"
+        android:includeFontPadding="false"
+        android:minHeight="0sp" android:minWidth="0sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnHide" />

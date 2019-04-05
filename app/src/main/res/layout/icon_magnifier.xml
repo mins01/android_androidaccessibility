@@ -13,13 +13,15 @@
         android:id="@+id/tvMagnifier"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#6D008577"
+
         android:clickable="false"
         android:focusable="false"
         android:text="🔎"
         android:textAlignment="center"
-        android:textSize="30sp"
+        android:textSize="80px"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>
