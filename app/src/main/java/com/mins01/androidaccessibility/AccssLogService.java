@@ -220,7 +220,7 @@ public class AccssLogService extends AccessibilityService {
 
                         }else{
                             params = (WindowManager.LayoutParams) view.getLayoutParams();
-                            getAccessibilityNodeInfoByXY(Math.round(params.x+(params.width/2)),Math.round(params.y+(params.height/2)+statusBarHeight));
+                            syncAccessibilityNodeInfoByXY(Math.round(params.x+(params.width/2)),Math.round(params.y+(params.height/2)+statusBarHeight));
                         }
                         isMove = false;
                         startX = -1;
@@ -467,11 +467,14 @@ public class AccssLogService extends AccessibilityService {
         return leftInfoRect.width() * leftInfoRect.height() < rightInfoRect.width() * rightInfoRect.height() ? leftInfo : rightInfo;
     }
 
-    public AccessibilityNodeInfo getAccessibilityNodeInfoByXY(int x,int y){
+    public void syncAccessibilityNodeInfoByXY(int x,int y){
         Log.v("@getAccssNodeInfoByXY","X="+String.valueOf(x)+"/Y="+String.valueOf(y));
 
 
         AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+        if(rootNode==null){
+            return;
+        }
         Log.v("@getAccssNodeInfoByXY","root:"+rootNode.toString());
 
         AccessibilityNodeInfo nodeInfo = findNodeInfoByPoint(rootNode,x,y);
@@ -493,6 +496,6 @@ public class AccssLogService extends AccessibilityService {
 
 
         }
-        return null;
+        return;
     }
 }
