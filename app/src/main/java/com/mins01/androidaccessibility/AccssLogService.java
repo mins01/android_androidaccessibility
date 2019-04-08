@@ -46,6 +46,7 @@ public class AccssLogService extends AccessibilityService {
 
     private AccessibilityEventVo lastEvt;
     private AccessibilityNodeInfo lastAn;
+
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
 
@@ -69,6 +70,7 @@ public class AccssLogService extends AccessibilityService {
 
         switch (eventType){
 //            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED: ; //2048
+//            break;
             case AccessibilityEvent.TYPE_VIEW_SCROLLED: ; //4096
             hideRect(true);
                 Log.v("@evt", "hide -0");
@@ -128,20 +130,18 @@ public class AccssLogService extends AccessibilityService {
 
     private TextView tvLastPackagename;
     private TextView tvLastText;
-    private View iconMagnifier;
+    private View layoutIconSelector;
+    private WindowManager.LayoutParams paramsIconSelector;
+    private View layoutIconMagnifier;
     private WindowManager.LayoutParams paramsIconMagnifier;
-    private View selectedArea;
+    private View layoutSelectedArea;
     private WindowManager.LayoutParams paramsSelectedArea;
+    private int LAYOUT_FLAG=0;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onCreate() {
-        Log.v("@onCreate","onCreate");
-        onCreateStep2();
         super.onCreate();
-        context = this;
-    }
-    public void onCreateStep2(){
-        int LAYOUT_FLAG;
+        Log.v("@onCreate","onCreate");
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         }else{
@@ -149,35 +149,110 @@ public class AccssLogService extends AccessibilityService {
         }
         wm = (WindowManager) getSystemService(WINDOW_SERVICE);
 
+
+        context = this;
+        addViewForIconMagnifier();
+        addViewForSelectedArea();
+        addViewForFloatMenuMain();
+        addViewForIconSelector();
+        //-- 초기화
+        hideRect(true);
+    }
+    private void addViewForIconSelector(){
         //돋보기용
-        iconMagnifier = View.inflate(this, R.layout.icon_magnifier, null);
+        layoutIconSelector = View.inflate(this, R.layout.icon_selector, null);
+        int margin50 = (int)dpToPx(context,30);
+
+        paramsIconSelector = new WindowManager.LayoutParams(
+                margin50,
+                margin50,
+                LAYOUT_FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE , //터치는 인식
+                PixelFormat.TRANSLUCENT); //투명
+
+        paramsIconSelector.gravity = Gravity.LEFT | Gravity.TOP;
+        wm.addView(layoutIconSelector, paramsIconSelector);
+
+        layoutIconSelector.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Log.v("@layoutIconSelector","click");
+            }
+        });
+        layoutIconSelector.setOnTouchListener(new View.OnTouchListener() {
+            private float marginPx = dpToPx(context,25);
+            private boolean isMove = false;
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                int statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
+                WindowManager.LayoutParams params;
+                switch (motionEvent.getAction())
+                {
+                    case MotionEvent.ACTION_DOWN:
+
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+
+                        params = (WindowManager.LayoutParams) view.getLayoutParams();
+                        params.x = Math.round(motionEvent.getRawX()-(params.width/2));
+                        params.y = Math.round(motionEvent.getRawY()-(params.height/2)-statusBarHeight);
+                        wm.updateViewLayout(view,params);
+                        isMove = true;
+                        return true;
+                    case MotionEvent.ACTION_UP:
+
+                        if(isMove){
+                            isMove = false;
+                        }else{
+                            params = (WindowManager.LayoutParams) view.getLayoutParams();
+                            getAccessibilityNodeInfoByXY(Math.round(params.x+(params.width)),Math.round(params.y+(params.height)));
+//                            float x = Math.round(motionEvent.getRawX()-marginPx);
+//                            float y = Math.round(motionEvent.getRawY()-marginPx);
+//                            getAccessibilityNodeInfoByXY(Math.round(x),Math.round(y));
+                        }
+                        return false;
+                    case MotionEvent.ACTION_CANCEL:
+
+                        return false;
+                    case MotionEvent.ACTION_OUTSIDE:
+
+                        return false;
+                }
+                return false;
+            }
+        });
+    }
+    private void addViewForIconMagnifier(){
+        //돋보기용
+        layoutIconMagnifier = View.inflate(this, R.layout.icon_magnifier, null);
         paramsIconMagnifier = new WindowManager.LayoutParams(
                 120,
                 120,
                 LAYOUT_FLAG,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE , //터치 인식
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE , //터치는 인식
                 PixelFormat.TRANSLUCENT); //투명
 
         paramsIconMagnifier.gravity = Gravity.LEFT | Gravity.TOP;
-//        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        wm.addView(iconMagnifier, paramsIconMagnifier);
+        wm.addView(layoutIconMagnifier, paramsIconMagnifier);
 
-        TextView tvMagnifier = (TextView) iconMagnifier.findViewById(R.id.tvMagnifier);
+        TextView tvMagnifier = (TextView) layoutIconMagnifier.findViewById(R.id.tvMagnifier);
         tvMagnifier.setOnClickListener(new TextView.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showResults();
             }
         });
-        iconMagnifier.setOnTouchListener(new View.OnTouchListener() {
+        layoutIconMagnifier.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 return true;
             }
         });
+    }
+    private void addViewForSelectedArea(){
         //위치표기용
-        Log.v("@selectedArea","selectedArea");
-        selectedArea = View.inflate(this, R.layout.selected_area, null);
+        Log.v("@layoutSelectedArea","layoutSelectedArea");
+        layoutSelectedArea = View.inflate(this, R.layout.selected_area, null);
         paramsSelectedArea = new WindowManager.LayoutParams(
                 200,
                 600,
@@ -186,22 +261,22 @@ public class AccssLogService extends AccessibilityService {
                 PixelFormat.TRANSLUCENT); //투명
 
         paramsSelectedArea.gravity = Gravity.LEFT | Gravity.TOP;
-//        wm = (WindowManager) getSystemService(WINDOW_SERVICE);
-        wm.addView(selectedArea, paramsSelectedArea);
-        selectedArea.setOnTouchListener(new View.OnTouchListener() {
+        wm.addView(layoutSelectedArea, paramsSelectedArea);
+        layoutSelectedArea.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 return true;
             }
         });
 
-//        ((TextView) selectedArea.findViewById(R.id.tvSelectedArea)).setOnTouchListener(new TextView.OnTouchListener() {
+//        ((TextView) layoutSelectedArea.findViewById(R.id.tvSelectedArea)).setOnTouchListener(new TextView.OnTouchListener() {
 //            @Override
 //            public boolean onTouch(View view, MotionEvent motionEvent) {
 //                return true;
 //            }
 //        });
-
+    }
+    private void addViewForFloatMenuMain(){
         //기본 메뉴
         floatmenuMain = View.inflate(this, R.layout.floatmenu_main, null);
         View fv = floatmenuMain;
@@ -233,17 +308,14 @@ public class AccssLogService extends AccessibilityService {
                 showResults();
             }
         });
-
-        //-- 초기화
-        hideRect(true);
     }
+
     public void hideRect(boolean hide){
-        iconMagnifier.setVisibility(hide?View.GONE:View.VISIBLE);
-        selectedArea.setVisibility(hide?View.GONE:View.VISIBLE);
+        layoutIconMagnifier.setVisibility(hide?View.GONE:View.VISIBLE);
+        layoutSelectedArea.setVisibility(hide?View.GONE:View.VISIBLE);
     }
     public void syncPos(Rect bound) {
-        int id = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        int statusBarHeight = getResources().getDimensionPixelSize(id);   // statisBar의 높이
+        int statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
         syncPos(bound.left,bound.top-statusBarHeight,bound.width(),bound.height());
     }
     public void syncPos(int left, int top, int width, int height){
@@ -255,13 +327,13 @@ public class AccssLogService extends AccessibilityService {
         paramsIconMagnifier.y = top + height - paramsIconMagnifier.height;
 //        paramsIconMagnifier.width = 120;
 //        paramsIconMagnifier.height = 120;
-        wm.updateViewLayout(iconMagnifier,paramsIconMagnifier);
+        wm.updateViewLayout(layoutIconMagnifier,paramsIconMagnifier);
 
         paramsSelectedArea.x = left  - dpGapPx;;
         paramsSelectedArea.y = top  - dpGapPx;;
         paramsSelectedArea.width = width  + 2*dpGapPx;;
         paramsSelectedArea.height = height  + 2*dpGapPx;;
-        wm.updateViewLayout(selectedArea,paramsSelectedArea);
+        wm.updateViewLayout(layoutSelectedArea,paramsSelectedArea);
 
     }
     @Override
@@ -275,16 +347,23 @@ public class AccssLogService extends AccessibilityService {
             }
 
         }
-        if(iconMagnifier != null){
+        if(layoutIconMagnifier != null){
             try{
-                wm.removeView(iconMagnifier);
+                wm.removeView(layoutIconMagnifier);
             }catch (Exception e){
 
             }
         }
-        if(selectedArea != null){
+        if(layoutSelectedArea != null){
             try{
-                wm.removeView(selectedArea);
+                wm.removeView(layoutSelectedArea);
+            }catch (Exception e){
+
+            }
+        }
+        if(layoutIconSelector != null){
+            try{
+                wm.removeView(layoutIconSelector);
             }catch (Exception e){
 
             }
@@ -371,5 +450,29 @@ public class AccssLogService extends AccessibilityService {
         // 사이즈가 작은 NodeInfo를 취득
 
         return leftInfoRect.width() * leftInfoRect.height() < rightInfoRect.width() * rightInfoRect.height() ? leftInfo : rightInfo;
+    }
+
+    public AccessibilityNodeInfo getAccessibilityNodeInfoByXY(int x,int y){
+        Log.v("@getAccssNodeInfoByXY","X="+String.valueOf(x)+"/Y="+String.valueOf(y));
+
+
+        AccessibilityNodeInfo rootNode = getRootInActiveWindow();
+        Log.v("@getAccssNodeInfoByXY","root:"+rootNode.toString());
+
+        AccessibilityNodeInfo nodeInfo = findNodeInfoByPoint(rootNode,x,y);
+        if(nodeInfo==null){
+            Log.v("@getAccssNodeInfoByXY","Result NULL");
+        }else{
+            Log.v("@getAccssNodeInfoByXY","node:"+nodeInfo.toString());
+            lastAn = nodeInfo;
+            tvLastPackagename.setText(nodeInfo.getPackageName());
+            tvLastText.setText(lastAn.getText());
+            Rect bound = new Rect();
+            nodeInfo.getBoundsInScreen(bound);
+            syncPos(bound);
+            hideRect(false);
+
+        }
+        return null;
     }
 }
