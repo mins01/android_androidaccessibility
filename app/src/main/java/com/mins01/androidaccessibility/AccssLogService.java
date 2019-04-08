@@ -182,6 +182,8 @@ public class AccssLogService extends AccessibilityService {
         layoutIconSelector.setOnTouchListener(new View.OnTouchListener() {
             private float marginPx = dpToPx(context,25);
             private boolean isMove = false;
+            private float startX = -1;
+            private float startY = -1;
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
                 int statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
@@ -189,33 +191,46 @@ public class AccssLogService extends AccessibilityService {
                 switch (motionEvent.getAction())
                 {
                     case MotionEvent.ACTION_DOWN:
-
+                        startX = motionEvent.getRawX();
+                        startY = motionEvent.getRawY();
+                        isMove = false;
+                        Log.v("@ACTION_DOWN",String.valueOf(startX)+"/"+String.valueOf(startY)+"/"+String.valueOf(isMove));
                         return true;
                     case MotionEvent.ACTION_MOVE:
 
-                        params = (WindowManager.LayoutParams) view.getLayoutParams();
-                        params.x = Math.round(motionEvent.getRawX()-(params.width/2));
-                        params.y = Math.round(motionEvent.getRawY()-(params.height/2)-statusBarHeight);
-                        wm.updateViewLayout(view,params);
-                        isMove = true;
+                        Log.v("@ACTION_MOVE",String.valueOf(startX)+"/"+String.valueOf(startY)+"//"+String.valueOf(motionEvent.getRawX())+"/"+String.valueOf(motionEvent.getRawY())+"/"+String.valueOf(isMove));
+
+                        if(isMove==true || (Math.abs(motionEvent.getRawX()-startX)>10 && Math.abs(motionEvent.getRawY()-startY)>10)){
+                            params = (WindowManager.LayoutParams) view.getLayoutParams();
+                            params.x = Math.round(motionEvent.getRawX()-(params.width/2));
+                            params.y = Math.round(motionEvent.getRawY()-(params.height/2)-statusBarHeight);
+                            wm.updateViewLayout(view,params);
+                            isMove = true;
+                            Log.v("@ACTION_MOVE","true");
+
+                        }else{
+                            Log.v("@ACTION_MOVE","false");
+                        }
+
                         return true;
                     case MotionEvent.ACTION_UP:
+                        Log.v("@ACTION_UP","ACTION_UP");
 
                         if(isMove){
-                            isMove = false;
+
                         }else{
                             params = (WindowManager.LayoutParams) view.getLayoutParams();
-                            getAccessibilityNodeInfoByXY(Math.round(params.x+(params.width)),Math.round(params.y+(params.height)));
-//                            float x = Math.round(motionEvent.getRawX()-marginPx);
-//                            float y = Math.round(motionEvent.getRawY()-marginPx);
-//                            getAccessibilityNodeInfoByXY(Math.round(x),Math.round(y));
+                            getAccessibilityNodeInfoByXY(Math.round(params.x+(params.width/2)),Math.round(params.y+(params.height/2)+statusBarHeight));
                         }
+                        isMove = false;
+                        startX = -1;
+                        startY = -1;
                         return false;
                     case MotionEvent.ACTION_CANCEL:
-
+                        isMove = false;
                         return false;
                     case MotionEvent.ACTION_OUTSIDE:
-
+                        isMove = false;
                         return false;
                 }
                 return false;
@@ -464,7 +479,7 @@ public class AccssLogService extends AccessibilityService {
             Log.v("@getAccssNodeInfoByXY","Result NULL");
         }else{
             Log.v("@getAccssNodeInfoByXY","node:"+nodeInfo.toString());
-            if(nodeInfo.getText()!=null && nodeInfo.getText().length()>0){
+            if(nodeInfo.getText()!=null && nodeInfo.getText().toString().trim().length()>0){
                 lastAn = nodeInfo;
                 tvLastPackagename.setText(nodeInfo.getPackageName());
                 tvLastText.setText(lastAn.getText());
