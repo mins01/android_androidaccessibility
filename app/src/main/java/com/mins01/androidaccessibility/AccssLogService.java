@@ -464,13 +464,18 @@ public class AccssLogService extends AccessibilityService {
             Log.v("@getAccssNodeInfoByXY","Result NULL");
         }else{
             Log.v("@getAccssNodeInfoByXY","node:"+nodeInfo.toString());
-            lastAn = nodeInfo;
-            tvLastPackagename.setText(nodeInfo.getPackageName());
-            tvLastText.setText(lastAn.getText());
-            Rect bound = new Rect();
-            nodeInfo.getBoundsInScreen(bound);
-            syncPos(bound);
-            hideRect(false);
+            if(nodeInfo.getText()!=null && nodeInfo.getText().length()>0){
+                lastAn = nodeInfo;
+                tvLastPackagename.setText(nodeInfo.getPackageName());
+                tvLastText.setText(lastAn.getText());
+                Rect bound = new Rect();
+                nodeInfo.getBoundsInScreen(bound);
+                syncPos(bound);
+                hideRect(false);
+            }else{
+                hideRect(true);
+            }
+
 
         }
         return null;
