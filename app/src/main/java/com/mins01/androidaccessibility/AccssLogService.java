@@ -2,15 +2,18 @@ package com.mins01.androidaccessibility;
 
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.os.Build;
 import android.provider.Settings;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Display;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -49,16 +52,33 @@ public class AccssLogService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent accessibilityEvent) {
+        int eventType = accessibilityEvent.getEventType();
+        String packageName = accessibilityEvent.getPackageName().toString();
 
+        Log.v("@evt_type",String.valueOf(eventType)+"/"+packageName);
+        switch (eventType){
+            case AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED: ; //32
+                if(!packageName.equals(getPackageName())){
+                    setOnTouchmode(false);
+                }
+
+            break;
+            case AccessibilityEvent.TYPE_TOUCH_INTERACTION_END: ; //2097152
+            case AccessibilityEvent.TYPE_TOUCH_INTERACTION_START: ; //1048576
+            case AccessibilityEvent.TYPE_ANNOUNCEMENT: ; //16384
+                setOnTouchmode(false);
+                hideRect(true);
+            break;
+
+        }
         AccessibilityNodeInfo source = accessibilityEvent.getSource();
         if(source==null){
+            Log.v("@evt","source==NULL");
             return;
         }
-        String packageName = accessibilityEvent.getPackageName().toString();
         String className = source==null?"":source.getClassName().toString();
         String text = accessibilityEvent.getText()==null?"":accessibilityEvent.getText().toString();
         String text2 = source.getText()==null?"":source.getText().toString();
-        int eventType = accessibilityEvent.getEventType();
 
 
         className = accessibilityEvent.getSource().getClassName().toString();
@@ -71,6 +91,7 @@ public class AccssLogService extends AccessibilityService {
         switch (eventType){
 //            case AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED: ; //2048
 //            break;
+
             case AccessibilityEvent.TYPE_VIEW_SCROLLED: ; //4096
             hideRect(true);
                 Log.v("@evt", "hide -0");
@@ -130,6 +151,8 @@ public class AccssLogService extends AccessibilityService {
 
     private TextView tvLastPackagename;
     private TextView tvLastText;
+    private View layoutTouchmodeLayer;
+    private WindowManager.LayoutParams paramsLayoutTouchmodeLayer;
     private View layoutIconSelector;
     private WindowManager.LayoutParams paramsIconSelector;
     private View layoutIconMagnifier;
@@ -137,11 +160,14 @@ public class AccssLogService extends AccessibilityService {
     private View layoutSelectedArea;
     private WindowManager.LayoutParams paramsSelectedArea;
     private int LAYOUT_FLAG=0;
+    private int statusBarHeight = 0;
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public void onCreate() {
         super.onCreate();
         Log.v("@onCreate","onCreate");
+        statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
+
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             LAYOUT_FLAG = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         }else{
@@ -155,8 +181,64 @@ public class AccssLogService extends AccessibilityService {
         addViewForSelectedArea();
         addViewForFloatMenuMain();
         addViewForIconSelector();
+        addViewTouchmodeLayer();
         //-- 초기화
+        setOnTouchmode(false);
         hideRect(true);
+    }
+    public void setOnTouchmode(boolean on){
+        layoutTouchmodeLayer.setVisibility(on?View.VISIBLE:View.GONE);
+    }
+    private void addViewTouchmodeLayer(){
+        //위치 잡기용 터치모드
+        layoutTouchmodeLayer = View.inflate(this, R.layout.touchmode_layer, null);
+        int margin50 = (int)dpToPx(context,30);
+
+        Display display = wm.getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        int width = size.x;
+        int height = size.y;
+
+        paramsLayoutTouchmodeLayer = new WindowManager.LayoutParams(
+                width,
+                height-statusBarHeight,
+                LAYOUT_FLAG,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE , //터치는 인식
+                PixelFormat.TRANSLUCENT); //투명
+
+        paramsLayoutTouchmodeLayer.gravity = Gravity.LEFT | Gravity.TOP;
+        wm.addView(layoutTouchmodeLayer, paramsLayoutTouchmodeLayer);
+
+        layoutTouchmodeLayer.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction())
+                {
+                    case MotionEvent.ACTION_DOWN:
+                        Log.v("@ACTION_DOWN","ACTION_DOWN");
+
+                        return true;
+                    case MotionEvent.ACTION_MOVE:
+
+                        Log.v("@ACTION_MOVE","ACTION_MOVE");
+
+                        return true;
+                    case MotionEvent.ACTION_UP:
+                        Log.v("@ACTION_UP","ACTION_UP");
+//                        syncAccessibilityNodeInfoByXY(Math.round(motionEvent.getRawX()),Math.round(motionEvent.getRawY()+statusBarHeight));
+                        syncAccessibilityNodeInfoByXY(Math.round(motionEvent.getRawX()),Math.round(motionEvent.getRawY()));
+                        setOnTouchmode(false);
+                        return false;
+                    case MotionEvent.ACTION_CANCEL:
+                        return false;
+                    case MotionEvent.ACTION_OUTSIDE:
+                        return false;
+                }
+                return false;
+            }
+        });
     }
     private void addViewForIconSelector(){
         //돋보기용
@@ -186,7 +268,7 @@ public class AccssLogService extends AccessibilityService {
             private float startY = -1;
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                int statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
+//                int statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
                 WindowManager.LayoutParams params;
                 switch (motionEvent.getAction())
                 {
@@ -300,7 +382,7 @@ public class AccssLogService extends AccessibilityService {
         tvLastText = (TextView) floatmenuMain.findViewById(R.id.tvLastText);
         params = new WindowManager.LayoutParams(
                 300,
-                600,
+                1000,
                 LAYOUT_FLAG,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, //터치 인식
                 PixelFormat.TRANSLUCENT); //투명
@@ -323,6 +405,14 @@ public class AccssLogService extends AccessibilityService {
                 showResults();
             }
         });
+
+        ((Button) floatmenuMain.findViewById(R.id.btnTouchModeOn)).setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+//                setCanRequestTouchExplorationMode(true);
+                setOnTouchmode(true);
+            }
+        });
     }
 
     public void hideRect(boolean hide){
@@ -330,7 +420,7 @@ public class AccssLogService extends AccessibilityService {
         layoutSelectedArea.setVisibility(hide?View.GONE:View.VISIBLE);
     }
     public void syncPos(Rect bound) {
-        int statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
+//        int statusBarHeight = getResources().getDimensionPixelSize(getResources().getIdentifier("status_bar_height", "dimen", "android"));   // statisBar의 높이
         syncPos(bound.left,bound.top-statusBarHeight,bound.width(),bound.height());
     }
     public void syncPos(int left, int top, int width, int height){
@@ -383,6 +473,15 @@ public class AccssLogService extends AccessibilityService {
 
             }
         }
+        if(layoutTouchmodeLayer != null){
+            try{
+                wm.removeView(layoutTouchmodeLayer);
+            }catch (Exception e){
+
+            }
+        }
+
+
         stopSelf();
     }
 
@@ -497,5 +596,26 @@ public class AccssLogService extends AccessibilityService {
 
         }
         return;
+    }
+
+    /**
+     * Don't use it
+     * @param on
+     */
+    @Deprecated
+    public void setCanRequestTouchExplorationMode(boolean on){
+        AccessibilityServiceInfo asi = getServiceInfo();
+        if(on) {
+            asi.flags |= AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE;
+        }else{
+            asi.flags &= ~AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE;
+        }
+        if(((asi.flags & AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE) == AccessibilityServiceInfo.FLAG_REQUEST_TOUCH_EXPLORATION_MODE)){
+            Log.v("@flag","FLAG_REQUEST_TOUCH_EXPLORATION_MODE-ON");
+        }else{
+            Log.v("@flag","FLAG_REQUEST_TOUCH_EXPLORATION_MODE-OFF");
+        }
+        setServiceInfo(asi);
+
     }
 }

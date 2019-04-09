@@ -6,4 +6,14 @@
     android:accessibilityFeedbackType="feedbackAllMask"
     android:notificationTimeout="100"
     android:description="@string/accessibility_description"
-    android:canRetrieveWindowContent="true" />
+    android:canRetrieveWindowContent="true"
+    android:accessibilityFlags="flagDefault|flagRequestEnhancedWebAccessibility"
+
+    android:canRequestTouchExplorationMode="false"
+
+
+
+    />
+    <!--android:accessibilityFlags="flagDefault|flagIncludeNotImportantViews|flagRequestTouchExplorationMode"-->
+
+    <!--android:canRequestTouchExplorationMode="true" //TYPE_TOUCH_INTERACTION_END,TYPE_TOUCH_INTERACTION_START 를 받을 경우 설정, 설정하면 화면의 다른 동작이 막힘-->

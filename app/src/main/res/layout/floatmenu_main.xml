@@ -45,48 +45,65 @@
         android:id="@+id/tvLastText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#000"
-        android:background="#fff"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:background="#fff"
         android:text="last Text"
         android:textAppearance="@style/TextAppearance.AppCompat"
+        android:textColor="#000"
         android:textSize="8sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvLastPackagename" />
+        app:layout_constraintTop_toBottomOf="@+id/btnTouchModeOn" />
 
     <Button
         android:id="@+id/btnHide"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:includeFontPadding="false"
+
+        android:minWidth="0sp"
+        android:minHeight="0sp"
         android:text="setting"
         android:textSize="8sp"
-
-        android:includeFontPadding="false"
-        android:minHeight="0sp" android:minWidth="0sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.500"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvLastText" />
+        app:layout_constraintTop_toBottomOf="@+id/tvLastPackagename" />
 
     <Button
         android:id="@+id/btnShowResults"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:includeFontPadding="false"
+        android:minWidth="0sp"
+        android:minHeight="0sp"
         android:text="show results"
         android:textSize="8sp"
-        android:includeFontPadding="false"
-        android:minHeight="0sp" android:minWidth="0sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnHide" />
+
+    <Button
+        android:id="@+id/btnTouchModeOn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:includeFontPadding="false"
+        android:minWidth="0sp"
+        android:minHeight="0sp"
+        android:text="TouchMode-On"
+        android:textSize="8sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnShowResults" />
+
 
 </android.support.constraint.ConstraintLayout>
